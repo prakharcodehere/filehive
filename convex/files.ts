@@ -1,5 +1,14 @@
 import { ConvexError, v } from "convex/values"
-import {mutation, query} from "./_generated/server"
+import {MutationCtx, QueryCtx, mutation, query} from "./_generated/server"
+import { getUser } from "./users";
+
+
+async function hasAccessToOrg (ctx: QueryCtx | MutationCtx,  tokenIdentifier: string, orgId: string){
+    const user =  await getUser(ctx, tokenIdentifier);
+const hasAccess = user.orgIds.includes(orgId )|| user.tokenIdentifier.includes(orgId) ;
+
+return hasAccess;``
+}
 
 export const createFile = mutation({ 
         args:{
@@ -9,9 +18,27 @@ export const createFile = mutation({
     },
     async handler(ctx, args){
 const identity =  await ctx.auth.getUserIdentity();
+console.log(identity)
 if(!identity){
     throw new ConvexError("you must be loggen in upload a file")
 }
+const user =  await getUser(ctx, identity.tokenIdentifier);
+
+
+
+
+
+
+
+const hasAccess = user.orgIds.includes(args.orgId )|| user.tokenIdentifier.includes(args.orgId) ;
+
+
+
+
+ if(!hasAccess){
+throw new ConvexError("you ddon have acccess to this organization")
+ }
+
 
     await ctx.db.insert("files", {
         name:args.name,
@@ -28,7 +55,7 @@ export const getFiles = query({
 
         const identity =  await ctx.auth.getUserIdentity();
 if(!identity){
-  return []
+  return [];
 }
         return ctx.db.query("files").withIndex("by_orgId", q => 
         q.eq("orgId", args.orgId)).collect()
