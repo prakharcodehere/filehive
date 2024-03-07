@@ -3,6 +3,18 @@ import {MutationCtx, QueryCtx, mutation, query} from "./_generated/server"
 import { getUser } from "./users";
 
 
+export const generateUploadUrl = mutation(async (ctx) => {
+
+    const identity =  await ctx.auth.getUserIdentity();
+    console.log(identity)
+    if(!identity){
+        throw new ConvexError("you must be loggen in upload a file")
+    }
+
+  return await ctx.storage.generateUploadUrl();
+});
+
+
 async function hasAccessToOrg (ctx: QueryCtx | MutationCtx,  tokenIdentifier: string, orgId: string){
     const user =  await getUser(ctx, tokenIdentifier);
 const hasAccess = user.orgIds.includes(orgId )|| user.tokenIdentifier.includes(orgId) ;
@@ -13,6 +25,7 @@ return hasAccess;``
 export const createFile = mutation({ 
         args:{
         name: v.string(),
+        fileId:v.id("_storage"),
         orgId: v.string(),
 
     },
@@ -43,6 +56,7 @@ throw new ConvexError("you ddon have acccess to this organization")
     await ctx.db.insert("files", {
         name:args.name,
        orgId : args.orgId,
+       fileId: args.fileId,
     });
     },
 });
