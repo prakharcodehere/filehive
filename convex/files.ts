@@ -19,7 +19,7 @@ async function hasAccessToOrg (ctx: QueryCtx | MutationCtx,  tokenIdentifier: st
     const user =  await getUser(ctx, tokenIdentifier);
 const hasAccess = user.orgIds.includes(orgId )|| user.tokenIdentifier.includes(orgId) ;
 
-return hasAccess;``
+return hasAccess;
 }
 
 export const createFile = mutation({ 
@@ -71,7 +71,40 @@ export const getFiles = query({
 if(!identity){
   return [];
 }
+
+
+
         return ctx.db.query("files").withIndex("by_orgId", q => 
         q.eq("orgId", args.orgId)).collect()
     },
+})
+
+
+export const deleteFile = mutation(
+    {
+args:{fileId: v.id("files")},
+async handler (ctx, args){
+    const identity =  await ctx.auth.getUserIdentity();
+    if(!identity){
+        throw new ConvexError("you do not have acccess to this organization")
+    }
+
+const file = await ctx.db.get(args.fileId);
+
+if(!file){
+    throw new ConvexError("this file does not exist")
+}
+
+    const hasAccess = await hasAccessToOrg(
+        ctx,
+        identity.tokenIdentifier,
+       file.orgId,
+    )
+
+    if(!hasAccess){
+        throw new ConvexError("you do not have acccess to delete this file")
+    }
+    await ctx.db.delete(args.fileId);
+}
+
 })
