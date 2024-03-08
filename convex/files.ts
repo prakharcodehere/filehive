@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values"
 import {MutationCtx, QueryCtx, mutation, query} from "./_generated/server"
 import { getUser } from "./users";
+import { fileTypes } from "./schema";
 
 
 export const generateUploadUrl = mutation(async (ctx) => {
@@ -25,6 +26,7 @@ return hasAccess;
 export const createFile = mutation({ 
         args:{
         name: v.string(),
+        type:fileTypes,
         fileId:v.id("_storage"),
         orgId: v.string(),
 
@@ -55,6 +57,7 @@ throw new ConvexError("you ddon have acccess to this organization")
 
     await ctx.db.insert("files", {
         name:args.name,
+      type: args.type,
        orgId : args.orgId,
        fileId: args.fileId,
     });

@@ -53,7 +53,7 @@ export default function Home() {
 
 
 
-
+//
 
   const organization = useOrganization();
   const user = useUser();
@@ -74,19 +74,48 @@ export default function Home() {
 
   return (
     <main className="container mx-auto pt-12">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold ">Your files</h1>
-
-        <UplaodButton/>
-
       
-      </div>
+{files === undefined  &&  
+<div  className="flex flex-col gap-4 w-full items-center mt-12 ">
+  <Loader2 className="h-24 w-24 animate-spin text-gray-400"/>
+  <div className="text-2xl">Loading...</div>
+</div>
+}
 
-<div className="grid grid-cols-4 gap-4 ">  
-  {files?.map((file) => {
-        return <FileCard key={file._id} file={file}/>;
-      })}
-      </div>
+      {files && files.length === 0 && (
+  <div className="flex flex-col gap-4 w-full items-center mt-12 ">
+  <Image
+alt="folder image"
+src="/empty.svg"
+width="300"
+height="300"/>
+<div className="text-2xl ">
+You have no files, go ahead and upload one now
+</div>
+<UplaodButton/>
+</div>
+)}
+
+
+{files && files.length > 0 && (
+  <>
+  <div className="flex justify-between items-center mb-8">
+  <h1 className="text-4xl font-bold ">Your Files</h1>
+
+  <UplaodButton/>
+  </div>
+  <div className="grid grid-cols-3 gap-4 ">  
+
+{files?.map((file) => {
+      return <FileCard key={file._id} file={file}/>;
+    })}
+    </div>
+
+
+</>
+)}
+
+
    
     </main>
   );
