@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
   } from "@/components/ui/card"
-  import { Doc, Id } from "../../convex/_generated/dataModel"
+  import { Doc, Id } from "../../../../convex/_generated/dataModel"
 import { Button } from "@/components/ui/button"
 
 import {
@@ -17,7 +17,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
-import { DeleteIcon, FileText, GanttChartIcon, ImageIcon, MoreVertical, Trash, WineOff } from "lucide-react"
+import { DeleteIcon, FileText, GanttChartIcon, ImageIcon, MoreVertical, StarIcon, Trash, WineOff } from "lucide-react"
   
 
 import {
@@ -33,7 +33,7 @@ import {
   } from "@/components/ui/alert-dialog"
 import { ReactNode, useState } from "react"
 import { useMutation } from "convex/react"
-import { api } from "../../convex/_generated/api"
+import { api } from "../../../../convex/_generated/api"
 import { useToast } from "@/components/ui/use-toast"
 import Image from "next/image"
   
@@ -49,7 +49,7 @@ function FileCardActions ({file} : {file: Doc<"files">}) {
 
 
 
-
+const toggleFavourite = useMutation(api.files.toggleFavourite)
 const [isConfirmOpen, setIsConfirmOpen] =  useState(false);
 const deleteFile = useMutation(api.files.deleteFile)
 const {toast} = useToast();
@@ -91,11 +91,28 @@ const {toast} = useToast();
         <DropdownMenu>
   <DropdownMenuTrigger><MoreVertical/></DropdownMenuTrigger>
   <DropdownMenuContent>
+
+  <DropdownMenuItem 
+    onClick={() => {
+      toggleFavourite({
+        fileId:file._id,
+
+      });
+    }}
+    className="flex gap-1 text-yellow-600 items-center 
+    cursor-pointer"> <StarIcon className="w-4 h-4"/> Favourite</DropdownMenuItem>
+
+
+<DropdownMenuSeparator/>
+
     <DropdownMenuItem 
     onClick={() => {
         setIsConfirmOpen(true)
     }}
-    className="flex gap-1 text-red-600 items-center cursor-pointer"> <Trash className="w-4 h-4"/> Delete</DropdownMenuItem>
+    className="flex gap-1 text-red-600 items-center 
+    cursor-pointer"> <Trash className="w-4 h-4"/> Delete</DropdownMenuItem>
+    
+
     
     
   </DropdownMenuContent>
