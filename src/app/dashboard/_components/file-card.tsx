@@ -17,7 +17,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
-import { DeleteIcon, FileText, GanttChartIcon, ImageIcon, MoreVertical, StarIcon, Trash, WineOff } from "lucide-react"
+import { DeleteIcon, FileText, GanttChartIcon, ImageIcon, MoreVertical, StarHalf, StarIcon, Trash, WineOff } from "lucide-react"
   
 
 import {
@@ -42,7 +42,7 @@ import Image from "next/image"
 
 
 
-function FileCardActions ({file} : {file: Doc<"files">}) {
+function FileCardActions ({file, isFavorited} : {file: Doc<"files">, isFavorited: boolean}) {
 
 
 
@@ -100,7 +100,15 @@ const {toast} = useToast();
       });
     }}
     className="flex gap-1 text-yellow-600 items-center 
-    cursor-pointer"> <StarIcon className="w-4 h-4"/> Favourite</DropdownMenuItem>
+    cursor-pointer"> 
+    {isFavorited ? (
+      <div className="flex gap-1 items-center">
+    <StarHalf className="w-4 h-4"/> Unfavorite </div>
+    ) :( <div className="flex gap-1 items-center "> <StarIcon className="w-4 h-4 font-bold"/> Favorite </div>
+    )
+    
+   
+ } </DropdownMenuItem>
 
 
 <DropdownMenuSeparator/>
@@ -127,13 +135,17 @@ function getFileUrl(fileId: Id<"_storage">) : string {
 
 
 
-const FileCard = ({file} : {file: Doc<"files">}) => {
+const FileCard = ({file, favorites} : {file: Doc<"files">, favorites: Doc<"favorites">[]}) => {
 
   const typeIcons = {
     "image": <  ImageIcon/>,
     "pdf": <FileText/>,
     "csv":<GanttChartIcon/>,
   } as Record<Doc<"files">["type"], ReactNode>
+
+
+  const isFavorited =  favorites.some(favorite => favorite.fileId === file._id);
+  
 
   return (
     <>
@@ -144,7 +156,7 @@ const FileCard = ({file} : {file: Doc<"files">}) => {
         {file.name}
       </CardTitle>
       <div className="absolute top-2 right-1">
-      <FileCardActions file={file}/>
+      <FileCardActions file={file} isFavorited={isFavorited}/>
       </div>
      
       {/* <CardDescription>{file}</CardDescription> */}
