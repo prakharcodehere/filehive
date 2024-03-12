@@ -1,48 +1,42 @@
 "use client";
 
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 
-import { Button } from "@/components/ui/button";
+
 import {
-  SignInButton,
-  SignOutButton,
-  SignedIn,
-  SignedOut,
+ 
   useOrganization,
-  useSession,
-  useUser,
+  
+  useUser
 } from "@clerk/nextjs";
-import { useMutation, useQuery } from "convex/react";
+import {  useQuery } from "convex/react";
 import Image from "next/image";
 import { api } from "../../../../convex/_generated/api";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+
+
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { FileIcon, Loader2, StarIcon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+
 import { UplaodButton } from "@/app/dashboard/_components/upload-button";
 import FileCard from "@/app/dashboard/_components/file-card";
 import SearchBar from "@/app/dashboard/_components/search-bar";
-import Link from "next/link";
+
+import { DataTable } from "./file-table";
+import { columns } from "./columns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Grid3x3Icon, Loader2, Rows2Icon, Table2Icon, TableIcon } from "lucide-react";
+import { Doc } from "../../../../convex/_generated/dataModel";
+import { Label } from "@/components/ui/label";
+
+
 
 function Placeholder() {
   return (
@@ -66,14 +60,17 @@ const formSchema = z.object({
 export default function FileBrowser({
   title,
   favortiesOnly,
+  deletedOnly,
 }: {
   title: string;
   favortiesOnly?: boolean;
+  deletedOnly?:boolean;
 }) {
   
   const organization = useOrganization();
   const user = useUser();
   const [query, setQuery] = useState("");
+  const [type, setType] = useState<Doc<"files">["type"] | "all"> ("all");
 
   let orgId: string | undefined = undefined;
   if (organization.isLoaded && user.isLoaded) {
@@ -85,28 +82,89 @@ export default function FileBrowser({
 
   const files = useQuery(
     api.files.getFiles,
-    orgId ? { orgId, query, favorites : favortiesOnly} : "skip"
+    orgId ? { orgId,type:type === "all" ? undefined : type, query, favorites : favortiesOnly, deletedOnly :deletedOnly} : "skip"
   );
+
+  const modifiedFiles =
+  files?.map((file) => ({
+    ...file,
+    isFavorited: (favorites ?? []).some(
+      (favorite) => favorite.fileId === file._id
+    ),
+  })) ?? [];
+
+
+
+  const isLoading = files === undefined;
+
+
 
   return (
     <div>
-      {files && (
-        <>
+      
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl font-bold ">{title}</h1>
+            
             <SearchBar query={query} setQuery={setQuery} />
             <UplaodButton />
           </div>
 
-          {files.length === 0 && <Placeholder />}
 
-          <div className="grid grid-cols-3 gap-4 ">
-            {files?.map((file) => {
-              return <FileCard key={file._id} file={file} favorites={favorites || []}/>;
+          <Tabs defaultValue="Grid" >
+          
+          
+          <div className="flex justify-between items-center">
+  <TabsList className="mb-8" >
+   
+    <TabsTrigger value="grid" className="flex gap-2 items-center"><Grid3x3Icon/>Grid</TabsTrigger>
+    <TabsTrigger value="table" className="flex gap-2 items-center"><Rows2Icon/>Table</TabsTrigger>
+  </TabsList>
+
+  <div className="flex gap-2 items-center">
+    <Label htmlFor="type-select">Type Filter</Label>
+  <Select  value={type} onValueChange={(newType) => setType(newType as any)}>
+  <SelectTrigger className="w-[180px]" id="type-select">
+    <SelectValue  />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="all">All</SelectItem>
+    <SelectItem value="image">Image</SelectItem>
+    <SelectItem value="csv">CSV</SelectItem>
+    <SelectItem value="pdf">PDF</SelectItem>
+  </SelectContent>
+</Select>
+
+  </div>
+
+
+  </div>
+  {isLoading && (
+          <div className="flex flex-col gap-8 w-full items-center mt-24">
+            <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
+            <div className="text-2xl">Loading your files...</div>
+          </div>
+        )}
+  
+  
+  
+  
+  <TabsContent value="grid">
+  <div className="grid grid-cols-3 gap-4 ">
+            {modifiedFiles?.map((file) => {
+              return <FileCard key={file._id} file={file} />;
             })}
           </div>
-        </>
-      )}
+  </TabsContent>
+  <TabsContent value="table"><DataTable columns={columns} data={modifiedFiles} /></TabsContent>
+</Tabs>
+
+
+
+          {files?.length === 0 && <Placeholder />}
+          
+
+          
+     
     </div>
   );
 }

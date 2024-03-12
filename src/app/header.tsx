@@ -8,14 +8,21 @@ import Image from "next/image";
 import React from "react";
 import Logo from "../../public/logo.png";
 import { Button } from "@nextui-org/react";
+import Link from "next/link";
 
 const Header = () => {
   return (
-    <div className="border-b py-4 bg-gray-50">
+    <div className="relative z-10 border-b py-4 bg-gray-50">
       <div className="items-center container mx-auto justify-between flex font-bold">
-        <div className="flex items-center justify-center">
-          <Image src="/logo.png" width={50} height={50} alt="logo"/>
-          File Hive.</div>
+        <Link href="/" className="flex items-center  gap-2">
+          <Image src="/file-hive-block.png" width={70} height={40} alt="logo"/>
+   
+     </Link>
+
+     <Button>
+     <Link href="/dashboard/files">Your Files</Link>
+     </Button>
+    
         <div className="flex gap-2">
           <OrganizationSwitcher />
           <UserButton />
