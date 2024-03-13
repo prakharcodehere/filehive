@@ -7,8 +7,9 @@ import {
 import Image from "next/image";
 import React from "react";
 import Logo from "../../public/logo.png";
-import { Button } from "@nextui-org/react";
+
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const Header = () => {
   return (
